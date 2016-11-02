@@ -1,0 +1,64 @@
+<html>
+<head>
+	<title>FEED TEST</title>
+</head>
+<body>
+
+	<!-- This is what's required-->
+	<div class="easier-rss-feed"
+		 data-feed-url="https://somedomain.com/rss/"></div>
+	
+	<!-- An optional feed-name may be added as long as there's a cooresponding class method to format it -->
+	<div class="easier-rss-feed"
+		 data-feed-url="https://somedomain.com/rss/"
+		 data-feed-name="some_custom_callback"></div>
+
+	<!--
+		Other options include:
+		domain="http://www.domain.com" (for use in generating URL's to images...dumb)
+		no-cache="true"
+		force-update-cache="false"
+		max-num="3"
+		custom-class="my-unique-class"
+		show-description="1" (0=none, 1=full, >1=truncated)
+	-->
+	<div class="easier-rss-feed"
+		 data-feed-url="https://somedomain.com/rss/"
+		 data-domain=""
+		 data-no-cache="false"
+		 data-force-update-cache="false"
+		 data-max-num="3"
+		 data-custom-class="my-class"
+		 data-show-description="1"></div>
+
+	<!-- jQuery lib required -->
+	<script src="./_lib/jquery-3.1.1.min.js"></script>
+
+	<!-- Update the url to the location of ajax.php. To allow images etc. to display in CMS, set the domain attribute on the container or as a default below -->
+	<script type="text/javascript">
+		$(function() {
+		    $.each($(".easier-rss-feed"), function (index,value) {
+		        var $div = $(value);
+		        $.ajax({
+		            url: "ajax.php",
+		            data: {
+		            	/* Must use .attr() here instead of .data() to support super old version of jQuery (1.2.6) */
+		                feed_url: $div.attr("data-feed-url") || "",
+		                feed_name: $div.attr("data-feed-name") || "",
+		                domain: $div.attr("data-domain") || "false",
+		                no_cache: $div.attr("data-no-cache") || "false",
+		                force_update_cache: $div.attr("data-force-update-cache") || "false",
+		                max_num: $div.attr("data-max-num") || "false",
+		                custom_class: $div.attr("data-custom-class") || "false",
+		                show_desc: $div.attr("data-show-description") || "false"
+		            },
+		            method: "POST",
+		            success: function (response) {
+		                $div.replaceWith(response);
+		            }
+		        });
+		    });
+		});
+	</script>
+</body>
+</html>
