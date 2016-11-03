@@ -43,14 +43,14 @@
 		            url: "ajax.php",
 		            data: {
 		            	/* Must use .attr() here instead of .data() to support super old version of jQuery (1.2.6) */
-		                feed_url: $div.attr("data-feed-url") || "",
-		                feed_name: $div.attr("data-feed-name") || "",
-		                domain: $div.attr("data-domain") || "false",
-		                no_cache: $div.attr("data-no-cache") || "false",
-		                force_update_cache: $div.attr("data-force-update-cache") || "false",
-		                max_num: $div.attr("data-max-num") || "false",
-		                custom_class: $div.attr("data-custom-class") || "false",
-		                show_desc: $div.attr("data-show-description") || "false"
+		                feed_url: $div.data("feed-url") || "",
+		                feed_name: $div.data("feed-name") || "",
+		                domain: $div.data("domain") || "false",
+		                no_cache: $div.data("no-cache") || "false",
+		                force_update_cache: $div.data("force-update-cache") || "false",
+		                max_num: $div.data("max-num") || "false",
+		                custom_class: $div.data("custom-class") || "false",
+		                show_desc: $div.data("show-description") || "false"
 		            },
 		            method: "POST",
 		            success: function (response) {
