@@ -42,7 +42,6 @@
 		        $.ajax({
 		            url: "ajax.php",
 		            data: {
-		            	/* Must use .attr() here instead of .data() to support super old version of jQuery (1.2.6) */
 		                feed_url: $div.data("feed-url") || "",
 		                feed_name: $div.data("feed-name") || "",
 		                domain: $div.data("domain") || "false",
