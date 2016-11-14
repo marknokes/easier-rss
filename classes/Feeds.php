@@ -322,7 +322,7 @@ class Feeds
 	* @param str $content The content to optionally truncate
 	* @return str The content. I know!
 	*/
-	private function truncate( $content = "" )
+	public function truncate( $content = "" )
 	{
 		if( $this->show_desc === 1 )
 			
