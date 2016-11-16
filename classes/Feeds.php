@@ -134,7 +134,10 @@ class Feeds
 	*
 	* @var array
 	*/
-	public $items_wrap = array();
+	public $items_wrap = array(
+		"container" 	=> "<ul class='%1\$s' data-cached='%2\$s'>%3\$s</ul>",
+		"item_wrapper" 	=> "</li>"
+	);
 
 	/**
 	* Should images be displayed in the feed?
@@ -189,11 +192,6 @@ class Feeds
 			$this->max_num = isset( $_REQUEST['max_num'] ) && "false" !== $_REQUEST['max_num'] ? (int)$_REQUEST['max_num'] : 0;
 
 			$this->css_class_list = isset( $_REQUEST['css_class_list'] ) ? trim( $_REQUEST['css_class_list'] ) : "";
-
-			$this->items_wrap = array(
-				"container" 	=> "<ul class='" . $this->css_class_list . "' data-cached='%1\$s'>%2\$s</ul>",
-				"item_wrapper" 	=> "</li>"
-			);
 
 			$this->show_desc = isset( $_REQUEST['show_desc'] ) && "false" !== $_REQUEST['show_desc'] ? (int)$_REQUEST['show_desc'] : 0;
 
@@ -359,7 +357,7 @@ class Feeds
 	*/
 	public function add_items_to_container( $content )
 	{
-		return sprintf( $this->items_wrap["container"], $this->cache_message, $content );
+		return sprintf( $this->items_wrap["container"], $this->css_class_list, $this->cache_message, $content );
 	}
 
 	/**
@@ -424,7 +422,7 @@ class Feeds
 
 		if( isset( $this->doc->channel->item ) && 0 === sizeof( (array)$this->doc->channel->item ) )
 
-			$content = sprintf( $this->items_wrap["container"], $this->cache_message, $this->wrap_item( $this->no_content_message ) );
+			$content = sprintf( $this->items_wrap["container"], $this->css_class_list, $this->cache_message, $this->wrap_item( $this->no_content_message ) );
 
 		else
 		{
