@@ -12,13 +12,12 @@ Add RSS feeds to your website. Supports SQL server, wincache, or file caching
 
 ## Example
 ```html
-<div class="easier-rss-feed"
+<div class="easier-rss-feed some-custom-class"
 		 data-feed-url="https://somedomain.com/rss/"
 		 data-domain=""
 		 data-no-cache="false"
 		 data-force-update-cache="false"
 		 data-max-num="3"
-		 data-custom-class="my-class"
 		 data-show-description="1"
 		 data-display-images="true"></div>
 ```

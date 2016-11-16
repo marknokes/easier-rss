@@ -22,13 +22,12 @@
 		custom-class="my-unique-class"
 		show-description="1" (0=none, 1=full, >1=truncated)
 	-->
-	<div class="easier-rss-feed"
+	<div class="easier-rss-feed some-custom-class"
 		 data-feed-url="https://somedomain.com/rss/"
 		 data-domain=""
 		 data-no-cache="false"
 		 data-force-update-cache="false"
 		 data-max-num="3"
-		 data-custom-class="my-class"
 		 data-show-description="1"></div>
 
 	<!-- jQuery lib required -->
@@ -49,7 +48,6 @@
 		                no_cache: $div.data("no-cache") || "false",
 		                force_update_cache: $div.data("force-update-cache") || "false",
 		                max_num: $div.data("max-num") || "false",
-		                custom_class: $div.data("custom-class") || "false",
 		                show_desc: $div.data("show-description") || "false",
 		                display_images: $div.attr("data-display-images") || "false",
 		                css_class_list: classList
