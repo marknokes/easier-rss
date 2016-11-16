@@ -26,7 +26,7 @@ class Feeds
     */
     public $max_num = 0;
 
-	/**
+    /**
     * The content to deliver. This will be echo'd from ajax.php
     *
     * @var str
@@ -136,7 +136,8 @@ class Feeds
 	*/
 	public $items_wrap = array(
 		"container" 	=> "<ul class='%1\$s' data-cached='%2\$s'>%3\$s</ul>",
-		"item_wrapper" 	=> "</li>"
+		"item_wrapper" 	=> "</li>",
+		"title_wrapper"	=> "</h3>"
 	);
 
 	/**
@@ -145,6 +146,13 @@ class Feeds
 	* @var str
 	*/
 	public $display_images = true;
+
+	/**
+	* Should the feed title be displayed?
+	*
+	* @var str
+	*/
+	public $display_title = true;
 
     /**
 	* The callback will be set based on the feed name retrieved from the feed-name data attribute on the HTML container. If no feed-name attribute is found,
@@ -199,7 +207,9 @@ class Feeds
 
 			$this->force_update_cache = isset( $_REQUEST['force_update_cache'] ) && "true" === $_REQUEST['force_update_cache'];
 
-			$this->display_images = isset( $_REQUEST['display_images'] ) && "true" === $_REQUEST['display_images'];
+			$this->display_images = isset( $_REQUEST['display_images'] ) && "false" !== $_REQUEST['display_images'];
+
+			$this->display_title = isset( $_REQUEST['display_title'] ) && "false" !== $_REQUEST['display_title'];
 
 			$feed_name = trim( $_REQUEST['feed_name'] );
 
@@ -357,7 +367,15 @@ class Feeds
 	*/
 	public function add_items_to_container( $content )
 	{
-		return sprintf( $this->items_wrap["container"], $this->css_class_list, $this->cache_message, $content );
+		$title_start = str_replace( "/", "", $this->items_wrap["title_wrapper"] );
+
+		$return = "";
+
+		$return .= $this->display_title && isset( $this->feed_title ) ? $title_start . $this->feed_title . $this->items_wrap["title_wrapper"] : "";
+
+		$return .= sprintf( $this->items_wrap["container"], $this->css_class_list, $this->cache_message, $content );
+
+		return $return;
 	}
 
 	/**
@@ -375,6 +393,8 @@ class Feeds
 		$content = "";
 
 		$num = 0;
+
+		$this->feed_title = isset( $this->doc->channel->title ) ? $this->doc->channel->title : "";
 
 		foreach ( $this->doc->channel->item as $child )
 		{
