@@ -112,6 +112,13 @@ class Feeds
 	private $wincache = false;
 
 	/**
+	* The list of supplied CSS classes from the container
+	*
+	* @var str
+	*/
+	public $css_class_list = "";
+
+	/**
 	* Database query formats
 	*
 	* @var array
@@ -134,10 +141,14 @@ class Feeds
 	*
 	* @var array
 	*/
-	public $items_wrap = array(
-		"container" 	=> "<ul class='%1\$s' cached='%2\$s'>%3\$s</ul>",
-		"item_wrapper" 	=> "</li>"
-	);
+	public $items_wrap = array();
+
+	/**
+	* Should images be displayed in the feed?
+	*
+	* @var str
+	*/
+	public $display_images = true;
 
     /**
 	* The callback will be set based on the feed name retrieved from the feed-name data attribute on the HTML container. If no feed-name attribute is found,
@@ -186,11 +197,20 @@ class Feeds
 
 			$this->custom_class = isset( $_REQUEST['custom_class'] ) && "false" !== $_REQUEST['custom_class'] ? trim( $_REQUEST['custom_class'] ) : "";
 
+			$this->css_class_list = isset( $_REQUEST['css_class_list'] ) ? trim( $_REQUEST['css_class_list'] ) : "";
+
+			$this->items_wrap = array(
+				"container" 	=> "<ul class='%1\$s " . $this->css_class_list . "' cached='%2\$s'>%3\$s</ul>",
+				"item_wrapper" 	=> "</li>"
+			);
+
 			$this->show_desc = isset( $_REQUEST['show_desc'] ) && "false" !== $_REQUEST['show_desc'] ? (int)$_REQUEST['show_desc'] : 0;
 
 			$this->no_cache = isset( $_REQUEST['no_cache'] ) && "true" === $_REQUEST['no_cache'];
 
 			$this->force_update_cache = isset( $_REQUEST['force_update_cache'] ) && "true" === $_REQUEST['force_update_cache'];
+
+			$this->display_images = isset( $_REQUEST['display_images'] ) && "true" === $_REQUEST['display_images'];
 
 			$feed_name = trim( $_REQUEST['feed_name'] );
 
@@ -373,11 +393,20 @@ class Feeds
 
 				break;
 
-			$item = "";
+			// Check that the enclosure contains type attribute
+			$enclosure_type = isset( $child->enclosure ) ? (string)$child->enclosure->attributes()->type : false;
+			// Let's be sure that the enclosure type is that of an image
+			$enclosure_is_img = $enclosure_type && false !== stripos( $enclosure_type, "image" );
+			// If we have an image type, get the url
+			$img_src = $enclosure_is_img ? (string)$child->enclosure->attributes()->url : false;
 
 			$has_link = ( !empty( $child->link ) );
 
+			$item = "";
+
 			$item .= $has_link ? "<a href='". $child->link ."' target='_blank'>" : "";
+
+			$item .= $this->display_images && $img_src ? "<img src='".$img_src."' />" : "";
 
 			$item .= $child->title;
 

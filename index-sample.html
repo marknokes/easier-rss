@@ -38,7 +38,8 @@
 	<script type="text/javascript">
 		$(function() {
 		    $.each($(".easier-rss-feed"), function (index,value) {
-		        var $div = $(value);
+		        var $div = $(value),
+            		classList = $div.attr('class');
 		        $.ajax({
 		            url: "ajax.php",
 		            data: {
@@ -49,7 +50,9 @@
 		                force_update_cache: $div.data("force-update-cache") || "false",
 		                max_num: $div.data("max-num") || "false",
 		                custom_class: $div.data("custom-class") || "false",
-		                show_desc: $div.data("show-description") || "false"
+		                show_desc: $div.data("show-description") || "false",
+		                display_images: $div.attr("data-display-images") || "false",
+		                css_class_list: classList
 		            },
 		            method: "POST",
 		            success: function (response) {
