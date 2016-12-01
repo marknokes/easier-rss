@@ -37,13 +37,13 @@ $config = array(
 
 /**
 * Custom callback functions. The function name must match the data-feed-name attrubute on the HTML div container,
-* otherwise, the feed_default method from the ucoFeeds class will be used
+* otherwise, the feed_default method from the Feeds class will be used
 * 
 * @param obj $doc Document object returned by simplexml_load_string()
 * @param int $max_num The maximum number of results to display. This is set on the HTML div container as the data-max-num attribute. Default is 0
-* @return str sprintf( $ucoFeeds->items_wrap["container"], $ucoFeeds->custom_class, $ucoFeeds->cache_message, $content );
+* @return str sprintf( $Feeds->items_wrap["container"], $Feeds->custom_class, $Feeds->cache_message, $content );
 */
-function some_custom_callback( $ucoFeeds )
+function some_custom_callback( $Feeds )
 {
 	if( !is_object( $doc ) ) return "";
 
@@ -53,11 +53,11 @@ function some_custom_callback( $ucoFeeds )
 
 	foreach ( $doc->channel->item as $child )
 	{
-		if ( $ucoFeeds->max_num !== 0 && $num === $ucoFeeds->max_num )
+		if ( $Feeds->max_num !== 0 && $num === $Feeds->max_num )
 
 			break;
 
-		$content .= $ucoFeeds->wrap_item( $child->description );
+		$content .= $Feeds->wrap_item( $child->description );
 
 		$num += 1;
 	}
