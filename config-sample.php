@@ -25,7 +25,6 @@ $config = array(
 
 	/* For database caching */
 	"db_connection" 	 => $db->connection, // See db-sample.php
-	"db_table" 			 => $db->table_name, // From your db ini config
 
 	/* For file caching */
 	"cache_path" 		 => "C:\\diff\\path\\from\\default", // Default is "C:\\tmp\\"

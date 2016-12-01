@@ -34,7 +34,7 @@ class Feeds
     public $content = "";
 
     /**
-    * Options are db and file. If a sql server db_connection object and db_table (name) are passed into config.php, the $cache_type will be set to "db",
+    * Options are db and file. If a sql server db_connection object is passed into config.php, the $cache_type will be set to "db",
     * otherwise "file" will be used
     *
     * @var str
@@ -84,13 +84,6 @@ class Feeds
 	private $id = "";
 
     /**
-    * Name of the database table if sql server persistance is used
-    *
-    * @var str
-    */
-    private $db_table = "";
-
-    /**
     * Instance of the database connection object if sql server persistance is used
     *
     * @var obj
@@ -117,15 +110,15 @@ class Feeds
 	* @var array
 	*/
 	private $queries = array(
-		"get" => "SELECT * FROM %1\$s WHERE id = '%2\$s'",
-		"set" => "IF EXISTS (SELECT id FROM %1\$s WHERE id = '%2\$s')
+		"get" => "SELECT * FROM cache_data WHERE id = '%1\$s'",
+		"set" => "IF EXISTS (SELECT id FROM cache_data WHERE id = '%1\$s')
 					  BEGIN
-					     UPDATE %1\$s SET last_run = %3\$d, cache_content = '%4\$s' WHERE id = '%2\$s'
+					     UPDATE cache_data SET last_run = %2\$d, cache_content = '%3\$s' WHERE id = '%1\$s'
 					  END
 				  ELSE
 					  BEGIN
-					     INSERT INTO %1\$s (id, last_run, cache_content)
-					     VALUES ('%2\$s', %3\$d, '%4\$s')
+					     INSERT INTO cache_data (id, last_run, cache_content)
+					     VALUES ('%1\$s', %2\$d, '%3\$s')
 					  END"
 	);
 
@@ -509,7 +502,6 @@ class Feeds
 		{
 			return $this->do_query( sprintf(
 				$this->queries["set"],
-				$this->db_table,
 				$this->id,
 				$this->time,
 				$this->mssql_escape_string( $this->content )
@@ -553,7 +545,7 @@ class Feeds
     	{
     		case "db":
 
-    			$feed_data = $this->do_query( sprintf( $this->queries["get"], $this->db_table, $this->id ) );
+    			$feed_data = $this->do_query( sprintf( $this->queries["get"], $this->id ) );
 
     			break;
 
