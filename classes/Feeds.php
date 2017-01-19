@@ -53,7 +53,7 @@ class Feeds
 	*
 	* @var str
 	*/
-	private $cache_path = "C:\\tmp\\";
+	private $cache_path = "";
 
 	/**
 	* The age of the cache data set as human readable time string in minutes, up to 59. For example: 25 minutes". This option may be overridden in config.php
@@ -226,7 +226,9 @@ class Feeds
 			{
 				$this->cache_type = 'file';
 
-				$this->cache_file = $this->cache_path . $this->cache_prefix . $hash;
+				$this->cache_path = "" !== $this->cache_path ? $this->cache_path : sys_get_temp_dir();
+
+				$this->cache_file = $this->cache_path . "\\" . $this->cache_prefix . $hash;
 			}
 
 			$this->cache_message = !$this->no_cache ? date("Y-m-d h:i A", $this->time) . " using " . $this->cache_type . " storage" : "";

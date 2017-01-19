@@ -20,7 +20,8 @@ $config = array(
 	/* This is the default format for feeds. Alternately, you may change the format here, or give your feed a data-feed-name and write a corresponding custom callback for truely custom output  */
 	"items_wrap" 		 => array(
 		"container" 	 => "<ul class='%1\$s' cached='%2\$s'>%3\$s</ul>",
-		"item_wrapper" 	 => "</li>" // Only specify end tag here
+		"item_wrapper" 	 => "</li>", // Only specify end tag here
+		"title_wrapper"	=> "</h3>"
 	),
 
 	/* For database caching */
