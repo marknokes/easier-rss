@@ -576,23 +576,4 @@ class Feeds
     	
     	return;
     }
-
-    /**
- 	* Set access control for ajax requests
- 	* 
- 	* @return null
- 	*/
-    public static function set_access_control_header( $allowed_domains = array() )
-    {
-		$origin_parts = isset( $_SERVER['HTTP_ORIGIN'] ) ? parse_url( $_SERVER['HTTP_ORIGIN'] ) : array('host' => '');
-
-		$origin_host = str_replace("www.", "", $origin_parts['host'] );
-
-		if ( in_array( $origin_host, $allowed_domains ) )
-		{
-			header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN'] );
-
-			header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
-		}
-	}
 }

@@ -3,7 +3,9 @@ include "./classes/Feeds.php";
 
 include "./config.php";
 
-easier_rss\Feeds::set_access_control_header( $config["allowed_domains"] );
+header('Access-Control-Allow-Origin: scripts.localhost' );
+
+header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
 
 $feed = new easier_rss\Feeds( $config );
 
