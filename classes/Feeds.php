@@ -46,14 +46,14 @@ class Feeds
     *
     * @var bool 
     */
-	private $no_cache = false;
+    private $no_cache = false;
 
 	/**
 	* The full path to the cache file, if sql server is not used for persistance. This option may be overridden in config.php
 	*
 	* @var str
 	*/
-	private $cache_path = "";
+	private $cache_path = "C:\\tmp\\";
 
 	/**
 	* The age of the cache data set as human readable time string in minutes, up to 59. For example: 25 minutes". This option may be overridden in config.php
@@ -204,11 +204,28 @@ class Feeds
 
 			$this->display_title = isset( $_REQUEST['display_title'] ) && "false" !== $_REQUEST['display_title'];
 
+			$custom_attr = isset( $_REQUEST['custom_attr'] ) && "false" !== $_REQUEST['custom_attr'];
+
 			$feed_name = trim( $_REQUEST['feed_name'] );
 
 			$this->callback = !empty( $feed_name ) && function_exists( $feed_name ) ? $feed_name : $this->callback;
 
 			$hash = hash( 'md5', $this->feed_url );
+
+			if( $custom_attr )
+			{
+				if( false !== strpos( $_REQUEST['custom_attr'], "|") )
+				{
+					$custom_attr_parts = explode( "|", $_REQUEST['custom_attr'] );
+
+					if( 2 == sizeof( $custom_attr_parts ) )
+					{
+						$custom_attr_key = $custom_attr_parts[0];
+						$custom_attr_val = $custom_attr_parts[1];
+						$this->$custom_attr_key = $custom_attr_val;					
+					}
+				}
+			}
 
 			if( isset( $this->db_connection ) )
 			{
@@ -226,9 +243,7 @@ class Feeds
 			{
 				$this->cache_type = 'file';
 
-				$this->cache_path = "" !== $this->cache_path ? $this->cache_path : sys_get_temp_dir();
-
-				$this->cache_file = $this->cache_path . "\\" . $this->cache_prefix . $hash;
+				$this->cache_file = $this->cache_path . $this->cache_prefix . $hash;
 			}
 
 			$this->cache_message = !$this->no_cache ? date("Y-m-d h:i A", $this->time) . " using " . $this->cache_type . " storage" : "";
@@ -305,7 +320,17 @@ class Feeds
  	*/
 	private function get_document()
 	{
-		if ( $content = @file_get_contents( $this->feed_url ) )
+		$context_options=array(
+		    "ssl"=>array(
+		        "verify_peer"      => false,
+		        "verify_peer_name" => false,
+		    ),
+		    'http'=>array(
+				'header'=> "User-Agent: Easier RSS\r\n"
+			)
+		); 
+
+		if ( $content = @file_get_contents( $this->feed_url, false, stream_context_create( $context_options ) ) )
 		{
 			$doc = @simplexml_load_string( $content );
 
