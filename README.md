@@ -19,6 +19,7 @@ Add RSS feeds to your website. Supports SQL server, wincache, or file caching
 		 data-force-update-cache="false"
 		 data-max-num="3"
 		 data-show-description="1"
+		 data-custom-attr="property|value,property_2|value_2"
 		 data-display-images="true"></div>
 ```
 
