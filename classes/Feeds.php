@@ -196,7 +196,7 @@ class Feeds
  	*/
     private function init( $config )
     {
-    	if ( empty( $_REQUEST['feed_url'] ) )
+    	if ( empty( $_POST['feed_url'] ) )
     	{
 			die("Missing feed URL!");
     	}
@@ -208,42 +208,42 @@ class Feeds
 
 			$this->time = time();
 
-			$this->feed_url = trim( $_REQUEST['feed_url'] );
+			$this->feed_url = trim( $_POST['feed_url'] );
 
-			$this->domain = isset( $_REQUEST['domain'] ) && "false" !== $_REQUEST['domain'] ? trim( $_REQUEST['domain'] ) : "";
+			$this->domain = isset( $_POST['domain'] ) && "false" !== $_POST['domain'] ? trim( $_POST['domain'] ) : "";
 
-			$this->max_num = isset( $_REQUEST['max_num'] ) && "false" !== $_REQUEST['max_num'] ? (int)$_REQUEST['max_num'] : 0;
+			$this->max_num = isset( $_POST['max_num'] ) && "false" !== $_POST['max_num'] ? (int)$_POST['max_num'] : 0;
 
-			$this->css_class_list = isset( $_REQUEST['css_class_list'] ) ? trim( $_REQUEST['css_class_list'] ) : "";
+			$this->css_class_list = isset( $_POST['css_class_list'] ) ? trim( $_POST['css_class_list'] ) : "";
 
-			$this->show_desc = isset( $_REQUEST['show_desc'] ) && "false" !== $_REQUEST['show_desc'] ? (int)$_REQUEST['show_desc'] : 0;
+			$this->show_desc = isset( $_POST['show_desc'] ) && "false" !== $_POST['show_desc'] ? (int)$_POST['show_desc'] : 0;
 
-			$this->no_cache = isset( $_REQUEST['no_cache'] ) && "true" === $_REQUEST['no_cache'];
+			$this->no_cache = isset( $_POST['no_cache'] ) && "true" === $_POST['no_cache'];
 
-			$this->force_update_cache = isset( $_REQUEST['force_update_cache'] ) && "true" === $_REQUEST['force_update_cache'];
+			$this->force_update_cache = isset( $_POST['force_update_cache'] ) && "true" === $_POST['force_update_cache'];
 
-			$this->display_images = isset( $_REQUEST['display_images'] ) && "false" !== $_REQUEST['display_images'];
+			$this->display_images = isset( $_POST['display_images'] ) && "false" !== $_POST['display_images'];
 
-			$this->display_title = isset( $_REQUEST['display_title'] ) && "false" !== $_REQUEST['display_title'];
+			$this->display_title = isset( $_POST['display_title'] ) && "false" !== $_POST['display_title'];
 
-			$custom_attr = isset( $_REQUEST['custom_attr'] ) && "false" !== $_REQUEST['custom_attr'];
+			$custom_attr = isset( $_POST['custom_attr'] ) && "false" !== $_POST['custom_attr'] ? $_POST['custom_attr']: false;
 
-			$feed_name = trim( $_REQUEST['feed_name'] );
+			$feed_name = trim( $_POST['feed_name'] );
 
 			$this->callback = !empty( $feed_name ) && function_exists( $feed_name ) ? $feed_name : $this->callback;
 
-			if( $custom_attr )
+			if( false !== $custom_attr )
 			{
 				// Add ability to pass multiple custom attributes while making backwards compatible
-				if( false !== strpos( $_REQUEST['custom_attr'], ",") )
+				if( false !== strpos( $custom_attr, ",") )
 				{
-					foreach ( explode( ",", $_REQUEST['custom_attr'] ) as $pipe_seperated_atts )
+					foreach ( explode( ",", $custom_attr ) as $pipe_seperated_atts )
 
 						$this->set_class_props_from_custom_atts( $pipe_seperated_atts );
 				}
-				elseif( false !== strpos( $_REQUEST['custom_attr'], "|") )
+				elseif( false !== strpos( $custom_attr, "|") )
 
-					$this->set_class_props_from_custom_atts( $_REQUEST['custom_attr'] );
+					$this->set_class_props_from_custom_atts( $custom_attr );
 			}
 
 			// If a feed_id is present, use it for caching, otherwise, generate an md5 hash of properties to distinguish the feeds if the same url is used in different callback functions.
@@ -270,7 +270,7 @@ class Feeds
 				$this->cache_file = $this->cache_path . $this->cache_prefix . $hash;
 			}
 
-			$this->cache_message = !$this->no_cache ? date("Y-m-d h:i A", $this->time) . " using " . $this->cache_type . " storage" : "";
+			$this->cache_message = !$this->no_cache ? date("Y-m-d h:i A", $this->time): "";
 			
 			return $this;
 		}
