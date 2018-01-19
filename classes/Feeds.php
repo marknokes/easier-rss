@@ -166,6 +166,28 @@ class Feeds
 		$this->init( $config )->run();
     }
 
+    /**
+    * Split custom attributes and set class properties
+    *
+    * @param str String containing property name and value seperated by pipe character, e.g. my_property|my_value
+    * @return null The method sets $this->my_property to the specified value
+    */
+    private function set_class_props_from_custom_atts( $pipe_seperated_atts )
+    {
+    	$custom_attr_parts = explode( "|", $pipe_seperated_atts );
+
+    	if( 2 == sizeof( $custom_attr_parts ) )
+    	{
+	    	$custom_attr_key = $custom_attr_parts[0];
+
+			$custom_attr_val = $custom_attr_parts[1];
+
+			$this->$custom_attr_key = $custom_attr_val;
+    	}
+
+    	return;
+    }
+
  	/**
  	* Initialize class arguments based on config.php and other pre-determined things
  	*
@@ -210,22 +232,24 @@ class Feeds
 
 			$this->callback = !empty( $feed_name ) && function_exists( $feed_name ) ? $feed_name : $this->callback;
 
-			$hash = hash( 'md5', $this->feed_url );
-
 			if( $custom_attr )
 			{
-				if( false !== strpos( $_REQUEST['custom_attr'], "|") )
+				// Add ability to pass multiple custom attributes while making backwards compatible
+				if( false !== strpos( $_REQUEST['custom_attr'], ",") )
 				{
-					$custom_attr_parts = explode( "|", $_REQUEST['custom_attr'] );
+					foreach ( explode( ",", $_REQUEST['custom_attr'] ) as $pipe_seperated_atts )
 
-					if( 2 == sizeof( $custom_attr_parts ) )
-					{
-						$custom_attr_key = $custom_attr_parts[0];
-						$custom_attr_val = $custom_attr_parts[1];
-						$this->$custom_attr_key = $custom_attr_val;					
-					}
+						$this->set_class_props_from_custom_atts( $pipe_seperated_atts );
 				}
+				elseif( false !== strpos( $_REQUEST['custom_attr'], "|") )
+
+					$this->set_class_props_from_custom_atts( $_REQUEST['custom_attr'] );
 			}
+
+			// If a feed_id is present, use it for caching, otherwise, generate an md5 hash of properties to distinguish the feeds if the same url is used in different callback functions.
+			$to_hash = sprintf( "%s:%s:%s", $this->callback, $this->feed_url, (string)$this->max_num );
+
+			$hash = isset( $this->feed_id ) ? $this->feed_id : hash( 'md5', $to_hash );
 
 			if( isset( $this->db_connection ) )
 			{
@@ -441,7 +465,7 @@ class Feeds
 
 			$item .= $has_link ? "</a>" : "";
 
-			$item .= $this->show_desc ? "<span class='broncho-feed-description' style='display:block;margin:5px 0 15px;'>" . $this->truncate( $child->description ) . "</span>" : "";
+			$item .= $this->show_desc ? "<span class='feed-description' style='display:block;margin:5px 0 15px;'>" . $this->truncate( $child->description ) . "</span>" : "";
 
 			$content .= $this->wrap_item( $item );
 
