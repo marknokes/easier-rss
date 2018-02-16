@@ -1,6 +1,6 @@
 # Easier RSS
 
-Add RSS feeds to your website. Supports SQL server, wincache, or file caching
+Add RSS/Atom feeds to your website. Supports SQL server, wincache, or file caching
 
 ## To get started:
 
@@ -22,5 +22,6 @@ Add RSS feeds to your website. Supports SQL server, wincache, or file caching
 		 data-custom-attr="property|value,property_2|value_2"
 		 data-display-images="true"></div>
 ```
+* For the data-custom-attr field, use atom_content|content or atom_content|summary to change the retrieved description. The default is summary.
 
 Happy RSS'ing!

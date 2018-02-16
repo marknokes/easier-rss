@@ -4,12 +4,47 @@ namespace easier_rss;
 
 class Feeds
 {
+	/**
+    * atom or rss
+    *
+    * @var str
+    */
+    public $feed_type = "";
+
+    /**
+    * Title of feed
+    *
+    * @var str
+    */
+    public $feed_title = "";
+
+    /**
+    * Link of feed
+    *
+    * @var str
+    */
+    public $feed_link = "";
+
+    /**
+    * Items
+    *
+    * @var array
+    */
+    public $children = array();
+
     /**
     * Timestamp representing the current run time
     *
     * @var int
     */
     private $time = 0;
+
+    /**
+    * PHP date() format string
+    *
+    * @var str
+    */
+    public $date_format = "F j, Y";
 
     /**
     * Timestamp representing the last time the feed was retrieved. This value is stored in the cache with the content
@@ -182,7 +217,7 @@ class Feeds
 
 			$custom_attr_val = $custom_attr_parts[1];
 
-			$this->$custom_attr_key = $custom_attr_val;
+			$this->$custom_attr_key = "false" === $custom_attr_val ? false : $custom_attr_val;
     	}
 
     	return;
@@ -225,6 +260,8 @@ class Feeds
 			$this->display_images = isset( $_POST['display_images'] ) && "false" !== $_POST['display_images'];
 
 			$this->display_title = isset( $_POST['display_title'] ) && "false" !== $_POST['display_title'];
+
+			$this->display_author = false;
 
 			$custom_attr = isset( $_POST['custom_attr'] ) && "false" !== $_POST['custom_attr'] ? $_POST['custom_attr']: false;
 
@@ -438,34 +475,48 @@ class Feeds
 
 		$num = 0;
 
-		$this->feed_title = isset( $this->doc->channel->title ) ? $this->doc->channel->title : "";
-
-		foreach ( $this->doc->channel->item as $child )
+		foreach ( $this->children as $child )
 		{
 			if ( $this->max_num !== 0 && $num === $this->max_num )
 
 				break;
 
-			// Check that the enclosure contains type attribute
-			$enclosure_type = isset( $child->enclosure ) ? (string)$child->enclosure->attributes()->type : false;
-			// Let's be sure that the enclosure type is that of an image
-			$enclosure_is_img = $enclosure_type && false !== stripos( $enclosure_type, "image" );
-			// If we have an image type, get the url
-			$img_src = $enclosure_is_img ? (string)$child->enclosure->attributes()->url : false;
+			$img_src = $this->get_image_src( $child );
 
-			$has_link = ( !empty( $child->link ) );
+			$link = $this->get_link( $child );
+
+			$has_link = ( !empty( $link ) );
+
+			$date = $this->get_date( $child );
+
+			$author = $this->get_author( $child );
 
 			$item = "";
 
-			$item .= $has_link ? "<a href='". $child->link ."' target='_blank'>" : "";
+			$item .= $has_link ? "<a href='". $link ."' target='_blank'>" : "";
 
 			$item .= $this->display_images && $img_src ? "<img src='".$img_src."' />" : "";
 
-			$item .= $child->title;
+			$item .= $this->get_item_title( $child );
 
-			$item .= $has_link ? "</a>" : "";
+			$item .= $has_link ? "</a><br />" : "<br />";
 
-			$item .= $this->show_desc ? "<span class='feed-description' style='display:block;margin:5px 0 15px;'>" . $this->truncate( $child->description ) . "</span>" : "";
+			if( $author && $this->display_author )
+			{
+				$item .= "<span class='author'>";
+
+				$item .= $author["name"] ? "<span class='name'>". $author["name"] ."</span><br />": "";
+
+				$item .= $author["uri"] ? "<span class='uri'>". $author["uri"] ."</span><br />": "";
+
+				$item .= $author["email"] ? "<span class='email'>". $author["email"] ."</span><br />": "";
+
+				$item .= "</span>";				
+			}
+
+			$item .= "<time datetime='" . $date . "'>" . $date . "</time><br />";
+
+			$item .= $this->show_desc ? "<span class='broncho-feed-description'>" . $this->truncate( $this->get_item_description( $child ) ) . "</span>" : "";
 
 			$content .= $this->wrap_item( $item );
 
@@ -475,8 +526,194 @@ class Feeds
 		return $this->add_items_to_container( $content );
 	}
 
+	private function set_feed_atts()
+	{
+		if( isset( $this->doc->channel ) )
+
+			$this->feed_type = "rss";
+
+		elseif ( isset( $this->doc->entry ) )
+			
+			$this->feed_type = "atom";
+
+		switch( $this->feed_type )
+		{
+			case "rss":
+
+				$feed_link = $this->get_link( $this->doc->channel );
+
+				$feed_title = $this->doc->channel->title;
+
+				foreach ($this->doc->channel->item as $key => $value)
+				{
+					if( "item" === $key )
+
+						$this->children[] = $value;
+				}
+
+				$this->content_node = "description";
+
+				$this->img_enc_node = array(
+					"node" 	=> "enclosure",
+					"att"	=> "url"
+				);
+
+				$this->date_node = "pubDate";
+				
+				break;
+
+			case "atom":
+
+				$feed_link = $this->get_link( $this->doc );
+
+				$feed_title = $this->doc->title;
+				
+				foreach ($this->doc->entry as $key => $value)
+				{
+					if( "entry" === $key )
+
+						$this->children[] = $value;
+				}
+
+				$atom_content = array( "summary", "content" );
+				
+				$this->content_node = isset( $this->atom_content ) && in_array( $this->atom_content, $atom_content ) ? $this->atom_content : "summary";
+
+				$this->img_enc_node = array(
+					"node" 	=> "link",
+					"att"	=> "href"
+				);
+
+				$this->date_node = "updated";
+				
+				break;
+		}
+
+		$this->feed_title = isset( $feed_link, $feed_title ) ? "<a href='". $feed_link ."'>" . $feed_title . "</a>" : "";
+		
+		return;
+	}
+
+	public function get_image_src( $child )
+	{
+		$size = sizeof( $child->{$this->img_enc_node["node"]} );
+		
+		if( 0 !== $size )
+		{
+			for( $i=0; $i < $size; $i++ )
+			{
+				// Check that the enclosure contains type attribute
+				$type = (string)$child->{$this->img_enc_node["node"]}[$i]->attributes()->type;
+				// Let's be sure that the enclosure type is that of an image
+				$enclosure_is_img = isset( $type ) && false !== stripos( $type, "image" );
+				// Set the url if it exists
+				$url = (string)$child->{$this->img_enc_node["node"]}[$i][$this->img_enc_node["att"]];
+				// If we have an image type and url, return url
+				if( $enclosure_is_img && isset( $url ) )
+
+					return $url;
+			}
+		}
+
+		return false;
+	}
+
+	public function get_link( $node )
+	{
+		$link_node = $node->link[0];
+
+		if( !$link_node)
+
+			return "";
+
+		switch( $this->feed_type )
+		{
+			case "rss":
+				$link = (string)$link_node;
+				break;
+			case "atom":
+				$link = (string)$link_node->attributes()->href;
+				break;
+			default:
+				$link = "";
+		}
+
+		return $link;
+	}
+
+	public function encode( $string = "" )
+	{
+		return iconv( 'UTF-8', 'UTF-8//IGNORE', $string );
+	}
+
+	public function get_item_title( $child )
+	{
+		return $this->encode( $child->title );
+	}
+
+	public function get_item_description( $child )
+	{
+		$node = $child->{$this->content_node};
+
+		if( !$node )
+
+			return "";
+
+		$content = !empty( (string)$node->children()->getName() ) ? $node->children()->asXML() : $node;
+
+		return $this->encode( $content );
+        
+	}
+
+	public function get_date( $child )
+	{
+		$pubDate = $child->{$this->date_node};
+
+		if( !isset( $child->{$this->date_node} ) )
+
+			return "";
+
+		$time = strtotime( $child->{$this->date_node} );
+
+		return date( $this->date_format, $time );
+	}
+
+	public function get_author( $child )
+	{
+		$author = array(
+			"name" 	=> "",
+			"uri"	=> "",
+			"email" => ""
+		);
+
+		if( $child->author )
+		{
+			$children = $child->author->children();
+		
+			if( $children )
+			{
+				foreach( $children as $author_data )
+				{	
+					$key = (string)$author_data->getName();
+
+					if( in_array( $key, array_keys( $author ) ) )
+
+						$author[ $key ] = (string)$child->author->{ $key };
+				}
+			}
+			else
+			{
+				$author_name = (string)$child->author;
+
+				$author = $author_name ? array( "name" => $author_name ) : array();
+			}
+		}
+
+		return $author;
+	}
+
 	/**
- 	* Build an unordered list of feed content
+ 	* Build feed content according to feed default layout, or user supplied callback
  	* 
  	* @return obj $this
  	*/
@@ -484,22 +721,24 @@ class Feeds
 	{
 		$this->doc = $this->get_document();
 
-		if( isset( $this->doc->channel->item ) && 0 === sizeof( (array)$this->doc->channel->item ) )
+		$this->set_feed_atts();
 
+		if( 0 === sizeof( $this->children ) )
+			// No content
 			$content = sprintf( $this->items_wrap["container"], $this->css_class_list, $this->cache_message, $this->wrap_item( $this->no_content_message ) );
 
 		else
 		{
 			if( !function_exists( $this->callback ) )
-
+				// class default callback
 				$content = call_user_func( array( $this, $this->callback ), $this );
 
 			else
-
+				// user supplied callback
 				$content = call_user_func( $this->callback, $this );
 		}
-
-		$this->content .= $content;
+		
+	    $this->content .= $content;
 
 		return $this;
 	}
