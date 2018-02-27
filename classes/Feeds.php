@@ -37,7 +37,7 @@ class Feeds
     *
     * @var int
     */
-    private $time = 0;
+    protected $time = 0;
 
     /**
     * PHP date() format string
@@ -51,7 +51,7 @@ class Feeds
     *
     * @var int
     */
-    private $last_run = 0;
+    protected $last_run = 0;
 
     /**
     * This currently only applies to feed_default, although, custom callbacks could easily use it.
@@ -74,63 +74,63 @@ class Feeds
     *
     * @var str
     */
-    private $cache_type = "";
+    protected $cache_type = "";
 
     /**
     * Should the feed be cached? This option should be set in the feed HTML as a data parameter, i.e., no-cache="true"
     *
     * @var bool 
     */
-    private $no_cache = false;
+    protected $no_cache = false;
 
 	/**
 	* The full path to the cache file, if sql server is not used for persistance. This option may be overridden in config.php
 	*
 	* @var str
 	*/
-	private $cache_path = "C:\\tmp\\";
+	protected $cache_path = "C:\\tmp\\";
 
 	/**
 	* The age of the cache data set as human readable time string in minutes, up to 59. For example: 25 minutes". This option may be overridden in config.php
 	*
 	* @var str
 	*/
-    private $cache_age = "15 minutes";
+    protected $cache_age = "15 minutes";
 
     /**
 	* Prefix to be prepended to the cache filename. This option may be overridden in config.php
 	*
 	* @var str
 	*/
-    private $cache_prefix = "feed-cache-";
+    protected $cache_prefix = "feed-cache-";
 
     /**
 	* The full path to the cache file including the cache filename, if sql server is not used for persistance. Configured in $this->init() and includes options from config.php
 	*
 	* @var str
 	*/
-	private $cache_file = "";
+	protected $cache_file = "";
 
 	/**
 	* If sql server is used for persistance, the database id of the cache data. Configured in $this->init() as an md5 hash
 	*
 	* @var str
 	*/
-	private $id = "";
+	protected $id = "";
 
     /**
     * Instance of the database connection object if sql server persistance is used
     *
     * @var obj
     */
-	private $db_connection;
+	protected $db_connection;
 
 	/**
     * Use wincache for persistance?
     *
     * @var bool
     */
-	private $wincache = false;
+	protected $wincache = false;
 
 	/**
 	* The list of supplied CSS classes from the container
@@ -144,7 +144,7 @@ class Feeds
 	*
 	* @var array
 	*/
-	private $queries = array(
+	protected $queries = array(
 		"get" => "SELECT * FROM cache_data WHERE id = '%1\$s'",
 		"set" => "IF EXISTS (SELECT id FROM cache_data WHERE id = '%1\$s')
 					  BEGIN
@@ -188,17 +188,15 @@ class Feeds
 	*
 	* @var str
 	*/
-    private $callback = "feed_default";
+    protected $callback = "feed_default";
 
 	/**
     * Create a configured instance to use the class.
     *
-    * @param array $config An array of options.
     * @return null
     */
-	public function __construct( $config )
+	public function __construct()
 	{
-		$this->init( $config )->run();
     }
 
     /**
@@ -207,7 +205,7 @@ class Feeds
     * @param str String containing property name and value seperated by pipe character, e.g. my_property|my_value
     * @return null The method sets $this->my_property to the specified value
     */
-    private function set_class_props_from_custom_atts( $pipe_seperated_atts )
+    protected function set_class_props_from_custom_atts( $pipe_seperated_atts )
     {
     	$custom_attr_parts = explode( "|", $pipe_seperated_atts );
 
@@ -229,7 +227,7 @@ class Feeds
  	* @param array $config See __construct()
  	* @return obj $this
  	*/
-    private function init( $config )
+    public function init( $config )
     {
     	if ( empty( $_POST['feed_url'] ) )
     	{
@@ -318,7 +316,7 @@ class Feeds
  	* 
  	* @return bool true if cache file exists and properly json decoded, false otherwise
  	*/
-	private function from_file_cache()
+	protected function from_file_cache()
     {
     	return file_exists( $this->cache_file ) ? json_decode( file_get_contents( $this->cache_file ) ) : false;
     }
@@ -328,7 +326,7 @@ class Feeds
  	* 
  	* @return bool true if cache file exists and properly json decoded, false otherwise
  	*/
-	private function from_wincache()
+	protected function from_wincache()
     {
     	return wincache_ucache_exists( $this->id ) ? json_decode( wincache_ucache_get( $this->id ) ) : false;
     }
@@ -339,7 +337,7 @@ class Feeds
  	* @param str $query The SQL query
  	* @return obj Object representing the data, false if query fails
  	*/
-    private function do_query( $query )
+    protected function do_query( $query )
     {
 		$stmt = sqlsrv_prepare( $this->db_connection, $query );
 
@@ -363,7 +361,7 @@ class Feeds
  	* 
  	* @return bool True if $this->last_run is false or if the current time is greater than the timestamp + the cache age, otherwise false
  	*/
-    private function do_run()
+    protected function do_run()
 	{
 		if( 0 === $this->last_run || $this->no_cache || $this->force_update_cache )
 
@@ -379,7 +377,7 @@ class Feeds
  	* 
  	* @return obj Object representing the feed data
  	*/
-	private function get_document()
+	protected function get_document()
 	{
 		$context_options=array(
 		    "ssl"=>array(
@@ -465,7 +463,7 @@ class Feeds
  	* @param obj $doc Document object returned by $this->get_document()
  	* @return bool false if $doc is empty string or true otherwise
  	*/
-	private function feed_default( $obj = null )
+	protected function feed_default( $obj = null )
 	{
 		if( !is_object( $this->doc ) )
 
@@ -526,7 +524,7 @@ class Feeds
 		return $this->add_items_to_container( $content );
 	}
 
-	private function set_feed_atts()
+	protected function set_feed_atts()
 	{
 		if( isset( $this->doc->channel ) )
 
@@ -717,7 +715,7 @@ class Feeds
  	* 
  	* @return obj $this
  	*/
-	private function set_content()
+	protected function set_content()
 	{
 		$this->doc = $this->get_document();
 
@@ -749,7 +747,7 @@ class Feeds
  	* @param str $data The string to escape
  	* @return str|int Empty string, integer if $data is numeric, or escaped string data
  	*/
-	private function mssql_escape_string( $data )
+	protected function mssql_escape_string( $data )
 	{
 		if ( !isset( $data ) || empty( $data ) )
 
@@ -782,7 +780,7 @@ class Feeds
  	* 
  	* @return bool true if database query succeeds or cache file created successfully, false otherwise
  	*/
-	private function cache()
+	protected function cache()
 	{
 		if ( $this->no_cache )
 		{
@@ -829,7 +827,7 @@ class Feeds
  	* 
  	* @return null
  	*/
-    private function run()
+    public function run()
     {
     	switch( $this->cache_type )
     	{
