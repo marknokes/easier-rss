@@ -514,7 +514,7 @@ class Feeds
 
 			$item .= "<time datetime='" . $date . "'>" . $date . "</time><br />";
 
-			$item .= $this->show_desc ? "<span class='broncho-feed-description'>" . $this->truncate( $this->get_item_description( $child ) ) . "</span>" : "";
+			$item .= $this->show_desc ? "<span class='feed-description'>" . $this->truncate( $this->get_item_description( $child ) ) . "</span>" : "";
 
 			$content .= $this->wrap_item( $item );
 
