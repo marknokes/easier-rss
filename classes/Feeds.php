@@ -178,9 +178,16 @@ class Feeds
 	/**
 	* Should the feed title be displayed?
 	*
-	* @var str
+	* @var bool
 	*/
 	public $display_title = true;
+
+	/**
+	* Should the feed item date be displayed?
+	*
+	* @var bool
+	*/
+	public $display_date = true;
 
     /**
 	* The callback will be set based on the feed name retrieved from the feed-name data attribute on the HTML container. If no feed-name attribute is found,
@@ -272,7 +279,8 @@ class Feeds
 				// Add ability to pass multiple custom attributes while making backwards compatible
 				if( false !== strpos( $custom_attr, ",") )
 				{
-					foreach ( explode( ",", $custom_attr ) as $pipe_seperated_atts )
+					// Allow escaping of commas by backslash for use in attribute values
+					foreach ( preg_split( '/(?<!\\\),/', $custom_attr ) as $pipe_seperated_atts )
 
 						$this->set_class_props_from_custom_atts( $pipe_seperated_atts );
 				}
@@ -286,21 +294,11 @@ class Feeds
 
 			$hash = isset( $this->feed_id ) ? $this->feed_id : hash( 'md5', $to_hash );
 
-			if( isset( $this->db_connection ) )
-			{
-				$this->cache_type = 'db';
+			$this->id = $hash;
 
-				$this->id = $hash;
-			}
-			elseif( true === $this->wincache )
+			if( !$this->cache_type || $this->cache_type === "file" )
 			{
-				$this->cache_type = 'wincache';
-
-				$this->id = $hash;
-			}
-			else
-			{
-				$this->cache_type = 'file';
+				$this->cache_type = "file";
 
 				$this->cache_file = $this->cache_path . $this->cache_prefix . $hash;
 			}
@@ -329,6 +327,16 @@ class Feeds
 	protected function from_wincache()
     {
     	return wincache_ucache_exists( $this->id ) ? json_decode( wincache_ucache_get( $this->id ) ) : false;
+    }
+
+    /**
+ 	* Retrieve content from apcu
+ 	* 
+ 	* @return bool true if cache file exists and properly json decoded, false otherwise
+ 	*/
+	protected function from_apcu()
+    {
+    	return apcu_exists( $this->id ) ? json_decode( apcu_fetch( $this->id ) ) : false;
     }
 
     /**
@@ -495,7 +503,11 @@ class Feeds
 
 			$item .= $this->display_images && $img_src ? "<img src='".$img_src."' />" : "";
 
-			$item .= $this->get_item_title( $child );
+			$item .= $has_link ? "</a><br />" : "<br />";
+
+			$item .= $has_link ? "<a href='". $link ."' target='_blank'>" : "";
+
+			$item .= "<span class='title'>" . $this->get_item_title( $child ) . "</span>";
 
 			$item .= $has_link ? "</a><br />" : "<br />";
 
@@ -512,7 +524,7 @@ class Feeds
 				$item .= "</span>";				
 			}
 
-			$item .= "<time datetime='" . $date . "'>" . $date . "</time><br />";
+			$item .= $this->display_date ? "<time datetime='" . $date . "'>" . $date . "</time><br />": "";
 
 			$item .= $this->show_desc ? "<span class='feed-description'>" . $this->truncate( $this->get_item_description( $child ) ) . "</span>" : "";
 
@@ -810,6 +822,21 @@ class Feeds
 				$seconds
 			);
 		}
+		elseif( "" !== $this->id && "apcu" === $this->cache_type )
+		{
+			$time = date( "00:i:s", strtotime( "+" . $this->cache_age, 0 ) );
+			
+			$seconds = strtotime("1970-01-01 $time UTC");
+			
+			return false !== apcu_store(
+				$this->id,
+				json_encode( array(
+					"last_run" 		=> $this->time,
+					"cache_content" => $this->content
+				) ),
+				$seconds
+			);
+		}
 		elseif( "" !== $this->cache_file && "file" === $this->cache_type )
 		{
 			return false !== file_put_contents(
@@ -840,6 +867,12 @@ class Feeds
     		case "wincache":
 
     			$feed_data = $this->from_wincache();
+
+    			break;
+    			
+    		case "apcu":
+
+    			$feed_data = $this->from_apcu();
 
     			break;
 
