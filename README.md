@@ -7,8 +7,7 @@ Add RSS/Atom feeds to your website. Supports SQL server, wincache, or file cachi
 * Copy the javascript from the bottom of the index-sample.html and place in your common/main javascript file. Be sure that you have the latest jQuery library loaded first
 * Go through the config-sample.php very carefully to determine the options you would like. 
 * Rename config-sample.php to config.php
-* If you're not using SQL server for persistance, remove the config options for the database. If you are, find a nice place for your db-config.ini and edit config.php accordingly.
-* If you're planning on using the default file caching method, be sure your server has permission to write to the cache file location. If you don't want to cache at all, set data-no-cache="true" on the container.
+* Caching options available using https://github.com/marknokes/cache, or some other user cache. See ajax.php for example usage.
 
 ## Example
 ```html
