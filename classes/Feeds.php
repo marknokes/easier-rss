@@ -573,6 +573,8 @@ class Feeds
 
 		$this->set_feed_atts();
 
+		$this->css_class_list = $this->css_class_list . " feed-id-" . $this->id;
+
 		if( 0 === sizeof( $this->children ) )
 			// No content
 			$content = sprintf( $this->items_wrap["container"], $this->css_class_list, $this->wrap_item( $this->no_content_message ) );
