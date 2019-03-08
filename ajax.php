@@ -31,14 +31,14 @@ foreach( $allowed as $allow )
 }
 */
 
-// // Instantiate the Feeds class
-// $feed = new easier_rss\Feeds();
+// Instantiate the Feeds class
+$feed = new easier_rss\Feeds();
 
-// // Initialize class properties and set content
-// $feed->init()->set_content();
+// Initialize class properties and set content
+$feed->init()->set_content();
 
-// // Output the content
-// die( $feed->content );
+// Output the content
+die( $feed->content );
 
 /***********************************************************
 * Example using Cache: https://github.com/marknokes/cache  *
