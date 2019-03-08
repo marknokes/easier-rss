@@ -3,7 +3,10 @@ include "./classes/Feeds.php";
 
 include "./config.php";
 
-/* Access Control */
+/*****************************
+* Access Control (optional)  *
+*****************************/
+/*
 if( !isset( $_SERVER['HTTP_ORIGIN'] ) )
 
          die("Unable to set access control");
@@ -13,17 +16,10 @@ $allowed = array(
     "domain.com"
 );
 
-// Get scheme, host, port, etc.
 $url_parts = parse_url( $_SERVER['HTTP_ORIGIN'] );
 
-// If the hostname is available, set a variable without the port for the next "if" check
 $origin_sans_port = $url_parts["host"] ?? $_SERVER['HTTP_ORIGIN'];
 
-/*
-* Since the Access-Control-Allow-Origin header must contain hostname:port, but
-* we are only interested in checking that the hostname ends in .subdomain.com, we must check the
-* "non-ported" version of HTTP_ORIGIN, but then set the header to match HTTP_ORIGIN (with port)
-*/
 foreach( $allowed as $allow )
 {
 	if( substr( $origin_sans_port, -strlen( $allow ) ) === $allow )
@@ -33,30 +29,45 @@ foreach( $allowed as $allow )
 	 	header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
 	}
 }
-/* End Access Control */
+*/
 
+// Instantiate the Feeds class
 $feed = new easier_rss\Feeds();
 
-$feed->init( $config )->set_content();
+// Initialize class properties and set content
+$feed->init()->set_content();
 
+// Output the content
 die( $feed->content );
 
-/* Example using Cache: https://github.com/marknokes/cache
+/***********************************************************
+* Example using Cache: https://github.com/marknokes/cache  *
+***********************************************************/
 
+/*
 include "path/to/Cache.php";
 
-$no_cache = isset( $_POST['no_cache'] ) && "true" === $_POST['no_cache'];
+// Include optional database connection info here
+include "db-sample_mysqli.php";
+$db_config = parse_ini_file( "db-config-sample.ini", true );
+$db = new db( $db_config['ini_section'] );
 
+// Your app may send these optional post values
+$no_cache = isset( $_POST['no_cache'] ) && "true" === $_POST['no_cache'];
 $force_update_cache = isset( $_POST['force_update_cache'] ) && "true" === $_POST['force_update_cache'];
 
+// Instantiate the Feeds class
 $feed = new easier_rss\Feeds();
 
+// Initialize the class properties giving access to the $feed->id. The id will be used as the cache key.
 $feed->init();
 
+// Set up the cache options
 $cache = new Cache( array( 
-	"cache_age"  => "30 minutes",
-	"cache_key"  => $feed->id,
-	"cache_type" => "apcu"
+	"cache_age"  	=> "30 minutes",
+	"cache_key"  	=> $feed->id,
+	"cache_type" 	=> "mysqli", // Options: file, wincache, apcu, mysqli, sqlsrv
+	"db_connection" => $db->connection // Use with mysqli or sqlsrv cache_type only
 ) );
 
 $content = $cache->get_cached_content();
@@ -72,7 +83,7 @@ if( !$content || $force_update_cache )
     }
 
 }
-
-die( $content );
-
 */
+
+// Output the content
+die( $content );

@@ -1,6 +1,6 @@
 # Easier RSS
 
-Add RSS/Atom feeds to your website. Supports SQL server, wincache, or file caching
+Add RSS/Atom feeds to your website.
 
 ## To get started:
 
