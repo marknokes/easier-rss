@@ -51,6 +51,12 @@ include "path/to/Cache.php";
 include "db-sample_mysqli.php";
 $db_config = parse_ini_file( "db-config-sample.ini", true );
 $db = new db( $db_config['ini_section'] );
+if( $db->errors )
+{
+	print_r( $db->errors );
+
+	die;
+}
 
 // Your app may send these optional post values
 $no_cache = isset( $_POST['no_cache'] ) && "true" === $_POST['no_cache'];
